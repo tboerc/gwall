@@ -41,7 +41,7 @@ That's the theory, but in practice sometimes some random guy joins the session o
 
 ## Usage
 
-If you successfully added the folder to you `PATH` you can run the `gwall` command anywhere with `CMD` or `PowerShell`. Make sure you are executing the commands with Administrator privileges.
+If you successfully added the folder to your `PATH` you can run the `gwall` command anywhere with `CMD` or `PowerShell`. Make sure you are executing the commands with Administrator privileges.
 
 ### Solo session
 
