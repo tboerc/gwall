@@ -43,7 +43,39 @@ That's the theory, but in practice sometimes some random guy joins the session o
 
 If you successfully added the folder to you `PATH` you can run the `gwall` command anywhere with `CMD` or `PowerShell`. Make sure you are executing the commands with Administrator privileges.
 
+### Solo session
+
+To start a solo session just run the following command:
+
+```bash
+gwall start solo
+```
+
+### Whitelist session
+
+There are a few more steps to start a whitelist session, first you need to add all your friends public IP to the list. They can find their public IP with the following command:
+
+```bash
+gwall ip
+```
+
+But, if somenone don't want to use `gwall`, it's possible to get the public IP on this [site](https://ip.bramp.net). Just remember to use the IPv4 value.
+
+To add the values to the whitelist, run the following command for each IP:
+
+```bash
+gwall add 220.191.42.195 # Replace with your friend IP
+```
+
+After setting up the list, just run:
+
+```bash
+gwall start whitelist
+```
+
 ## Avaliable commands
+
+All `gwall` commands are available below for further usage.
 
 ### gwall start solo
 
@@ -102,6 +134,14 @@ Display your public IP address. You can use this to send your public IP to a fri
 gwall ip
 # output ↓
 220.191.42.195
+```
+
+### gwall stop
+
+Stop, if needed, the WinDivert service. Run this if you wish to remove `gwall` and are having trouble deleting its folder.
+
+```bash
+gwall stop
 ```
 
 ## Build from source
