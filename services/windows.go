@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/tboerc/gwall/messages"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
 )
@@ -8,19 +9,19 @@ import (
 func StopDivert() (err error) {
 	m, err := mgr.Connect()
 	if err != nil {
-		return
+		return messages.ErrServiceConnect
 	}
 	defer m.Disconnect()
 
 	s, err := m.OpenService("WinDivert")
 	if err != nil {
-		return nil
+		return messages.ErrWindDivertNotRunning
 	}
 	defer s.Close()
 
 	_, err = s.Control(svc.Stop)
 	if err != nil {
-		return
+		return messages.ErrWindDivertStop
 	}
 
 	return
