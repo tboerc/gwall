@@ -31,7 +31,7 @@ Most times the tool works as expected, but there is sometimes that Rockstar chan
 ## Requirements
 
 - Administrator privileges
-- Windows 7 or greater 64 Bit
+- Windows 7 or greater 64 Bits
 
 ## Installation
 
