@@ -12,7 +12,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Avaliable commands](#avaliable-commands)
-- [Build from source](#build-from-source)
+- [Unistallation](#unistallation)
 - [Contributions](#contributions)
 - [Thanks to](#thanks-to)
 
@@ -26,7 +26,7 @@ There are some programs already that do this task, like [Guardian](https://www.t
 
 This tool uses [WinDivert](https://reqrypt.org/windivert.html) under the hood, feel free to understand how it works, but it's basically a user-mode packet capture-and-divert package. With that, the CLI can capture packets that make other users connect on your online session, and block it by the source IP. So if there is a packet with unknown source IP, one that is not on whitelist, it will be blocked, and the user with that IP will not join on your session.
 
-That's the theory, but in practice sometimes some random guy joins the session or your friend gets blocked, even with his IP on the whitelist. However, at most times it works as expected.
+Most times the tool works as expected, but there is sometimes that Rockstar changes how your friend connects on your session, so your friend will get blocked. If that happens, turn off your gwall and ask your friend to run it and then join his session, that should do the trick.
 
 ## Requirements
 
@@ -37,7 +37,7 @@ That's the theory, but in practice sometimes some random guy joins the session o
 
 - Download the latest release [here](https://github.com/tboerc/gwall/releases/latest)
 - Extract it anywhere you want, but make sure is a folder whitout special characters
-- Add the folder with extracted content to your `PATH`, you can follow this [guide](https://gist.github.com/nex3/c395b2f8fd4b02068be37c961301caa7) if you don't know how to do it
+- Add the folder with extracted content to your `PATH`, you can follow this [guide](https://github.com/tboerc/gwall/wiki/Adding-gwall-to-system-PATH) if you don't know how to do it
 
 ## Usage
 
@@ -48,7 +48,7 @@ If you successfully added the folder to your `PATH` you can run the `gwall` comm
 To start a solo session just run the following command:
 
 ```bash
-gwall start solo
+gwall solo
 ```
 
 ### Whitelist session
@@ -70,27 +70,27 @@ gwall add 220.191.42.195 # Replace with your friend IP
 After setting up the list, just run:
 
 ```bash
-gwall start whitelist
+gwall whitelist
 ```
 
 ## Avaliable commands
 
 All `gwall` commands are available below for further usage.
 
-### gwall start solo
+### gwall solo
 
 Block any user from your session.
 
 ```bash
-gwall start solo
+gwall solo
 ```
 
-### gwall start whitelist
+### gwall whitelist
 
 Allow users from your whitelist to be on your session.
 
 ```bash
-gwall start whitelist
+gwall whitelist
 ```
 
 ### gwall list
@@ -100,49 +100,49 @@ List all IP addresses on your whitelist.
 ```bash
 gwall list
 # output ↓
-Index     Public IP         Local IP
-0         220.191.42.195    220.191.42.115
-1         220.191.42.195    <nil>
-2         220.191.42.195    220.191.42.115
+Index     IP
+0         220.191.42.191
+1         220.191.42.192
+2         220.191.42.193
 ```
 
 ### gwall add
 
-Add a IP to whitelist, you can add a public or local IP. Most times you just need the public IP, but if your friend plays on the same internet as you, you need to add his local IP.
+Add an IP to the whitelist. Most of the time you want to add your friend's public IP, but if your friend plays on the same internet as you, you need to add their local IP.
 
 ```bash
-gwall add 220.191.42.196 # for only public IP
-
-gwall add nil 220.191.42.196 # for only local IP
-
-gwall add 220.191.42.198 220.191.42.196 # for both IPs
+gwall add 220.191.42.191
 ```
 
 ### gwall remove
 
-Remove an whitelist row based on it index. You can get the index with `gwall list`.
+Remove an IP from whitelist. You can get the IP list with `gwall list`.
 
 ```bash
-gwall remove 1
+gwall remove 220.191.42.191
 ```
 
 ### gwall ip
 
-Display your public IP address. You can use this to send your public IP to a friend add it on his whitelist.
+Display your public IP address. You can use this to send your public IP to a friend and add it to their whitelist.
 
 ```bash
 gwall ip
 # output ↓
-220.191.42.195
+220.191.42.191
 ```
 
 ### gwall stop
 
-Stop, if needed, the WinDivert service. Run this if you wish to remove `gwall` and are having trouble deleting its folder.
+Stop, if needed, the WinDivert service. Run this if you wish to remove `gwall` and are having trouble deleting it's folder.
 
 ```bash
 gwall stop
 ```
+
+## Unistallation
+
+If you want to uninstall `gwall`, just delete it's folder. If you have problems deleting the folder, just type `gwall stop` on CMD or PowerShell to fully stop the WinDivert service and you will be able to delete the folder.
 
 ## Build from source
 
