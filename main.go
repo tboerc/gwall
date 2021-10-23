@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/tboerc/divert-go"
+	"github.com/tboerc/gwall/messages"
 	"github.com/tboerc/gwall/services"
 	"github.com/urfave/cli/v2"
 )
@@ -28,7 +29,7 @@ func onClose(c *chan os.Signal) {
 func main() {
 	ex, err := os.Executable()
 	if err != nil {
-		fmt.Println(errExecPath)
+		fmt.Println(messages.ErrExecPath)
 	}
 
 	cp = filepath.Join(filepath.Dir(ex), "config.json")
@@ -42,13 +43,7 @@ func main() {
 		Version: "1.0.0",
 		Usage:   "Firewall for public, solo or whitelisted, sessions on Grand Theft Auto V",
 		Commands: []*cli.Command{
-			ip, list, add, remove, stop,
-			{
-				Name:        "start",
-				Usage:       "Start gwall in solo or whitelist mode",
-				Subcommands: []*cli.Command{solo, whitelist},
-				HideHelp:    true,
-			},
+			add, ip, list, remove, solo, stop, whitelist,
 		},
 		HideHelp: true,
 	}

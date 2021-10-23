@@ -6,16 +6,17 @@ import (
 	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/tboerc/gwall/messages"
 )
 
 type response struct {
 	IP net.IP `json:"query"`
 }
 
-func PublicIP() (i net.IP) {
+func PublicIP() (net.IP, error) {
 	req, err := http.Get("http://ip-api.com/json/")
 	if err != nil {
-		return
+		return nil, messages.ErrPublicIP
 	}
 	defer req.Body.Close()
 
@@ -24,13 +25,13 @@ func PublicIP() (i net.IP) {
 	var p response
 	jsoniter.Unmarshal(b, &p)
 
-	return p.IP
+	return p.IP, nil
 }
 
-func LocalIP() (i net.IP, err error) {
+func LocalIP() (net.IP, error) {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		return
+		return nil, messages.ErrLocalIP
 	}
 	defer conn.Close()
 

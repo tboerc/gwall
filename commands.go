@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strconv"
 	"text/tabwriter"
 	"time"
 
 	"github.com/tboerc/divert-go"
+	"github.com/tboerc/gwall/messages"
 	"github.com/tboerc/gwall/services"
 	"github.com/urfave/cli/v2"
 )
@@ -34,22 +34,15 @@ func onDivert() (pc chan *divert.Packet, err error) {
 func filter(l *Whitelist) (err error) {
 	pc, err := onDivert()
 	if err != nil {
-		return
+		return messages.ErrFilter
 	}
 
 	defer dh.End()
-	defer fmt.Print("Filtering done\n\n")
-
-	fmt.Println("Filtering started...")
 
 	go func() {
 		for packet := range pc {
 			for _, v := range *l {
-				if v.PublicIP != nil && packet.SrcIP().Equal(v.PublicIP) {
-					fmt.Println("Packet sent to", packet.SrcIP().String())
-					dh.Send(packet.Raw, packet.Addr)
-				} else if v.LocalIP != nil && packet.SrcIP().Equal(v.LocalIP) {
-					fmt.Println("Packet sent to", packet.SrcIP().String())
+				if v.IP != nil && packet.SrcIP().Equal(v.IP) {
 					dh.Send(packet.Raw, packet.Addr)
 				}
 			}
@@ -65,8 +58,13 @@ var ip = &cli.Command{
 	Name:  "ip",
 	Usage: "Returns your public IP",
 	Action: func(_ *cli.Context) (err error) {
-		ip := services.PublicIP()
+		ip, err := services.PublicIP()
+		if err != nil {
+			return
+		}
+
 		fmt.Println(ip)
+
 		return
 	},
 }
@@ -84,9 +82,9 @@ var list = &cli.Command{
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 5, ' ', 0)
 		defer w.Flush()
 
-		fmt.Fprintln(w, "Index\tPublic IP\tLocal IP")
+		fmt.Fprintln(w, "Index\tIP")
 		for i, v := range config.Whitelist {
-			fmt.Fprintf(w, "%d\t%s\t%s\n", i, v.PublicIP.String(), v.LocalIP.String())
+			fmt.Fprintf(w, "%d\t%s\n", i, v.IP.String())
 		}
 
 		return
@@ -95,20 +93,27 @@ var list = &cli.Command{
 
 var add = &cli.Command{
 	Name:      "add",
-	ArgsUsage: "PUBLIC_IP LOCAL_IP",
+	ArgsUsage: "IP",
 	Usage:     "Add a IP to whitelist",
 	Action: func(c *cli.Context) (err error) {
 		if c.Args().Len() == 0 {
-			return errNoIP
+			return messages.ErrNoIP
 		}
 
 		p := net.ParseIP(c.Args().Get(0))
-		l := net.ParseIP(c.Args().Get(1))
+		if p == nil {
+			return messages.ErrInvalidIP
+		}
 
 		config := ReadConfig()
-		config.Whitelist = append(config.Whitelist, &Allowed{PublicIP: p, LocalIP: l})
+		config.Whitelist = append(config.Whitelist, &Allowed{IP: p})
 
 		err = WriteConfig(config)
+		if err != nil {
+			return
+		}
+
+		fmt.Printf("Successfully added %s to whitelist\n", p.String())
 
 		return
 	},
@@ -116,22 +121,35 @@ var add = &cli.Command{
 
 var remove = &cli.Command{
 	Name:      "remove",
-	ArgsUsage: "INDEX",
-	Usage:     "Removes an IP from whitelist based on its index. To get the index use \"gwall list\"",
+	ArgsUsage: "IP",
+	Usage:     "Removes an IP from whitelist. To see the whitelist use \"gwall list\"",
 	Action: func(c *cli.Context) (err error) {
 		if c.Args().Len() == 0 {
-			return errNoIndex
+			return messages.ErrNoIP
 		}
 
-		i, err := strconv.Atoi(c.Args().Get(0))
-		if err != nil {
-			return errInvalidIndex
+		r := net.ParseIP(c.Args().Get(0))
+		if r == nil {
+			return messages.ErrInvalidIP
 		}
 
 		config := ReadConfig()
-		config.Whitelist = append(config.Whitelist[:i], config.Whitelist[i+1:]...)
+		var w Whitelist
+
+		for _, p := range config.Whitelist {
+			if !p.IP.Equal(r) {
+				w = append(w, p)
+			}
+		}
+
+		config.Whitelist = w
 
 		err = WriteConfig(config)
+		if err != nil {
+			return
+		}
+
+		fmt.Printf("Successfully removed %s from whitelist\n", r.String())
 
 		return
 	},
@@ -139,9 +157,11 @@ var remove = &cli.Command{
 
 var solo = &cli.Command{
 	Name:  "solo",
-	Usage: "Start gwall in solo mode",
+	Usage: "Start gwall in solo mode. Need admin privileges",
 	Action: func(_ *cli.Context) (err error) {
 		var config Config
+
+		fmt.Println("Press Ctrl+C to stop...")
 
 		for {
 			err = filter(&config.Whitelist)
@@ -156,11 +176,15 @@ var solo = &cli.Command{
 
 var whitelist = &cli.Command{
 	Name:  "whitelist",
-	Usage: "Start gwall in whitelist mode",
+	Usage: "Start gwall in whitelist mode. Need admin privileges",
 	Action: func(_ *cli.Context) (err error) {
-		config, _ := GetConfig()
+		config, err := GetConfig()
+		if err != nil {
+			return
+		}
 
-		fmt.Print("Loaded whitelist: ", config.Whitelist.String(), "\n\n")
+		fmt.Println("Loaded whitelist: ", config.Whitelist.String())
+		fmt.Println("Press Ctrl+C to stop...")
 
 		for {
 			err = filter(&config.Whitelist)
@@ -175,9 +199,15 @@ var whitelist = &cli.Command{
 
 var stop = &cli.Command{
 	Name:  "stop",
-	Usage: "Stop WinDivert service",
+	Usage: "Stop WinDivert service. Need admin privileges",
 	Action: func(_ *cli.Context) (err error) {
 		err = services.StopDivert()
+		if err != nil {
+			return
+		}
+
+		fmt.Println("WinDivert service stoped")
+
 		return
 	},
 }

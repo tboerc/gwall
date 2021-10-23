@@ -1,18 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net"
 	"sync"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/tboerc/gwall/messages"
 	"github.com/tboerc/gwall/services"
 )
 
 type Allowed struct {
-	LocalIP  net.IP `json:"local_ip,omitempty"`
-	PublicIP net.IP `json:"public_ip,omitempty"`
+	IP net.IP `json:"public_ip,omitempty"`
 }
 
 type Whitelist []*Allowed
@@ -27,13 +26,7 @@ func (w Whitelist) String() string {
 		if i > 0 {
 			s += ", "
 		}
-		if v.PublicIP != nil && v.LocalIP != nil {
-			s += fmt.Sprintf("%s, %s", v.PublicIP.String(), v.LocalIP.String())
-		} else if v.PublicIP != nil {
-			s += v.PublicIP.String()
-		} else if v.LocalIP != nil {
-			s += v.LocalIP.String()
-		}
+		s += v.IP.String()
 	}
 	return s + "]"
 }
@@ -50,7 +43,7 @@ func WriteConfig(c *Config) (err error) {
 
 	err = ioutil.WriteFile(cp, file, 0644)
 	if err != nil {
-		return errConfigWrite
+		return messages.ErrConfigWrite
 	}
 
 	return
@@ -64,17 +57,16 @@ func GetConfig() (c *Config, err error) {
 
 	go func() {
 		defer wg.Done()
-		l, er := services.LocalIP()
-		if er != nil {
-			err = er
+		l, err := services.LocalIP()
+		if err == nil {
+			c.Whitelist = append(c.Whitelist, &Allowed{IP: l})
 		}
-		c.Whitelist = append(c.Whitelist, &Allowed{LocalIP: l})
 	}()
 	go func() {
 		defer wg.Done()
-		p := services.PublicIP()
-		if p != nil {
-			c.Whitelist = append(c.Whitelist, &Allowed{PublicIP: p})
+		p, err := services.PublicIP()
+		if err == nil {
+			c.Whitelist = append(c.Whitelist, &Allowed{IP: p})
 		}
 	}()
 
