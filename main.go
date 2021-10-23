@@ -40,7 +40,7 @@ func main() {
 
 	app := &cli.App{
 		Name:    "gwall",
-		Version: "1.0.0",
+		Version: "2.0.0",
 		Usage:   "Firewall for public, solo or whitelisted, sessions on Grand Theft Auto V",
 		Commands: []*cli.Command{
 			add, ip, list, remove, solo, stop, whitelist,
