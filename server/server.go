@@ -3,35 +3,25 @@ package main
 import (
 	"context"
 	"log"
-	"net"
 
 	pb "github.com/tboerc/gwall/protos"
-	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 type server struct {
-	pb.UnsafeGreetServiceServer
+	pb.UnimplementedRoomServer
 }
 
-func main() {
-	lis, err := net.Listen("tcp", "0.0.0.0:50051")
-	if err != nil {
-		log.Fatalf("Failed to listen %v", err)
-	}
+func (*server) Join(ctx context.Context, in *pb.JoinRequest) (*pb.JoinResponse, error) {
+	uuid := in.GetUuid()
+	md, _ := metadata.FromIncomingContext(ctx)
 
-	s := grpc.NewServer()
-	pb.RegisterGreetServiceServer(s, &server{})
+	ip := md.Get(":authority")[0]
 
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to start server %v", err)
-	}
-}
+	log.Println("Ip is", ip)
+	log.Println("UUID is", uuid)
 
-// Greet greets with FirstName
-func (*server) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
-	result := "Hello " + in.GetGreeting().GetFirstName()
-	res := pb.GreetResponse{
-		Result: result,
-	}
+	res := pb.JoinResponse{}
+
 	return &res, nil
 }
