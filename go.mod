@@ -2,8 +2,6 @@ module github.com/tboerc/gwall
 
 go 1.18
 
-// +heroku install ./server
-
 require (
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
