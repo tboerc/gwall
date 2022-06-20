@@ -1,16 +1,10 @@
-BIN_FOLDER=.\bin
-LIB_FOLDER=.\lib
-BIN_LIB_FOLDER=.\bin\lib\
+proto:
+	protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		proto/*.proto
 
-prepare:
-	IF EXIST "$(BIN_FOLDER)" RMDIR /S /Q $(BIN_FOLDER)
-	MKDIR $(BIN_FOLDER)
-	MKDIR $(BIN_LIB_FOLDER)
+server:
+	$(MAKE) start -C server
 
-build: prepare
-	COPY LICENSE $(BIN_FOLDER)
-	XCOPY /S $(LIB_FOLDER) $(BIN_LIB_FOLDER)
-	go build -o $(BIN_FOLDER)\gwall.exe
-
-run:
-	go run main.go
+client:
+	$(MAKE) start -C client
