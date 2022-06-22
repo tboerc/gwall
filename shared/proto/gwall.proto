@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package gwall;
+option go_package = "./pb";
+
+message Info {
+  string message = 1;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  bytes password = 2;
+}
+
+message CreateUserResponse {
+  Info info = 1;
+}
+
+message LoginRequest {
+  string username = 1;
+  bytes password = 2;
+}
+
+message LoginResponse {
+  Info info = 1;
+  string token = 2;
+}
+
+message SyncRequest {
+  string ip = 1;
+}
+
+message SyncResponse {
+  Info info = 1;
+}
+
+message InviteUserRequest {
+  string username = 1;
+}
+
+message InviteUserResponse {
+  Info info = 1;
+}
+
+message AnswerInviteRequest {
+  string id = 1;
+  bool accept = 2;
+}
+
+message AnswerInviteResponse {
+  Info info = 1;
+}
+
+message HostRequest {}
+
+message HostResponse {
+  Info info = 1;
+  repeated string whitelist = 2;
+}
+
+

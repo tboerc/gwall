@@ -1,27 +1,40 @@
 package main
 
 import (
-	"context"
 	"log"
 
-	pb "github.com/tboerc/gwall/protos"
-	"google.golang.org/grpc/metadata"
+	"github.com/gin-gonic/gin"
+	"github.com/tboerc/gwall/server/controllers"
+	"github.com/tboerc/gwall/server/messages"
+	"github.com/tboerc/gwall/server/models"
+	"github.com/tboerc/gwall/shared"
 )
 
-type server struct {
-	pb.UnimplementedRoomServer
-}
+func main() {
+	if err := models.Connect(); err != nil {
+		log.Fatalln(messages.ErrDatabaseConn)
+	}
 
-func (*server) Join(ctx context.Context, in *pb.JoinRequest) (*pb.JoinResponse, error) {
-	uuid := in.GetUuid()
-	md, _ := metadata.FromIncomingContext(ctx)
+	r := gin.Default()
 
-	ip := md.Get(":authority")[0]
+	r.SetTrustedProxies(nil)
 
-	log.Println("Ip is", ip)
-	log.Println("UUID is", uuid)
+	v1 := r.Group("/v1")
+	{
+		v1.POST("/user/create", controllers.UserCreate)
 
-	res := pb.JoinResponse{}
+		v1.POST("/user/login", controllers.UserLogin)
 
-	return &res, nil
+		v1.POST("/user/sync", controllers.UserSync)
+
+		v1.POST("/friend/invite", controllers.FriendInvite)
+
+		v1.POST("/friend/answer", controllers.FriendAnswer)
+
+		v1.POST("/host", controllers.Host)
+	}
+
+	if err := r.Run(":" + shared.Getenv("PORT", "8080")); err != nil {
+		log.Fatalln(messages.ErrServerRun)
+	}
 }
