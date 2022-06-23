@@ -11,7 +11,8 @@ import (
 
 func UserCreate(c *gin.Context) {
 	r := &pb.CreateUserRequest{}
-	if err := c.MustBindWith(r, binding.ProtoBuf); err != nil {
+	if err := c.ShouldBindWith(r, binding.ProtoBuf); err != nil {
+		c.ProtoBuf(http.StatusBadRequest, &pb.CreateUserResponse{})
 		return
 	}
 
@@ -26,7 +27,21 @@ func UserCreate(c *gin.Context) {
 }
 
 func UserLogin(c *gin.Context) {
-	c.String(http.StatusOK, "PENDING")
+	r := &pb.LoginRequest{}
+	if err := c.ShouldBindWith(r, binding.ProtoBuf); err != nil {
+		c.ProtoBuf(http.StatusBadRequest, &pb.LoginResponse{})
+		return
+	}
+
+	u := &models.User{Username: r.Username, Password: r.Password}
+
+	t, err := u.Login()
+	if err != nil {
+		c.ProtoBuf(http.StatusBadRequest, &pb.LoginResponse{Info: &pb.Info{Message: err.Error()}})
+		return
+	}
+
+	c.ProtoBuf(http.StatusOK, &pb.LoginResponse{Token: t})
 }
 
 func UserSync(c *gin.Context) {

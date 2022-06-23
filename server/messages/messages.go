@@ -10,4 +10,7 @@ var (
 
 	ErrInvalidHash         = errors.New("erro: the encoded hash is not in the correct format")
 	ErrIncompatibleVersion = errors.New("error: incompatible version of argon2")
+
+	ErrUserNotMatch    = errors.New("error: user does not exist")
+	ErrUserTokenCreate = errors.New("error: could not create user token")
 )

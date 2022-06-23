@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.8.1
+	github.com/gofrs/uuid v4.0.0+incompatible
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	google.golang.org/protobuf v1.28.0
 	gorm.io/driver/postgres v1.3.7

@@ -23,7 +23,7 @@ message LoginRequest {
 
 message LoginResponse {
   Info info = 1;
-  string token = 2;
+  bytes token = 2;
 }
 
 message SyncRequest {

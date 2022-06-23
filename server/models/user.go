@@ -1,14 +1,16 @@
 package models
 
 import (
+	"github.com/tboerc/gwall/server/messages"
 	"github.com/tboerc/gwall/server/password"
 	"gorm.io/gorm"
 )
 
 type User struct {
 	ID       string `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Username string
+	Username string `gorm:"unique"`
 	Password []byte
+	Tokens   []Token
 }
 
 func (u *User) BeforeCreate(db *gorm.DB) (err error) {
@@ -23,12 +25,30 @@ func (u *User) BeforeCreate(db *gorm.DB) (err error) {
 }
 
 func (u *User) Create() error {
-	r := db.Create(u)
-	if r.Error != nil {
-		return r.Error
+	q := db.Create(u)
+	if q.Error != nil {
+		return q.Error
 	}
 
 	return nil
+}
+
+func (u *User) Login() ([]byte, error) {
+	dbu := &User{}
+	if q := db.First(dbu, "username = ?", u.Username); q.Error != nil {
+		return nil, messages.ErrUserNotMatch
+	}
+
+	if m, _ := password.Compare(u.Password, dbu.Password); !m {
+		return nil, messages.ErrUserNotMatch
+	}
+
+	t := &Token{UserID: dbu.ID}
+	if err := t.Create(); err != nil {
+		return nil, messages.ErrUserNotMatch
+	}
+
+	return []byte(t.ID), nil
 }
 
 func init() {
