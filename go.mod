@@ -6,7 +6,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/tboerc/divert-go v0.0.0-20210622145230-7e76196a93d3
 	github.com/urfave/cli/v2 v2.3.0
-	golang.org/x/sys v0.0.0-20211023085530-d6a326fbbf70
+	golang.org/x/sys v0.1.0
 )
 
 require (
